@@ -6,6 +6,8 @@ import { SPONSORS, bindPro, isPro, resetPro } from './pro';
 import { ImportModal } from './modal';
 import { DEFAULT_SETTINGS, ImportSettingTab, normalizeSettings, type ImportSettings } from './settings';
 import { writeImport, type WriteResult } from './writer';
+import { setupHello } from './hello/index';
+import WHATS_NEW from './whats-new.json';
 
 export default class RemNoteJsonImportPlugin extends Plugin {
  settings: ImportSettings = { ...DEFAULT_SETTINGS, presets: [] };
@@ -13,6 +15,8 @@ export default class RemNoteJsonImportPlugin extends Plugin {
  readonly modals = new Set<ImportModal>();
  private writing = false;
  async onload(): Promise<void> {
+   // First: "What's new" reads its state before the settings load (packages/hello). It does not wait.
+   setupHello(this, WHATS_NEW);
   await this.loadSettings();
   const pro = createGitHubSponsors(this.app, this.manifest.id, SPONSORS, this);
   pro.init(); this.pro = pro; bindPro(pro);

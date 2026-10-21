@@ -82,8 +82,7 @@ documents. Parent cycles are rejected before import.
 Use the files supplied for this version. Put `main.js`, `manifest.json`
 and `styles.css` in `.obsidian/plugins/remnote-json-import` inside a test
 vault. Enable community plugins, then enable RemNote JSON Import. The
-minimum supported public desktop version is 1.13.4. This repository is a
-build for review; it does not establish a community directory listing.
+minimum supported public desktop version is 1.13.4.
 
 Start with a copy of your vault and a small export. The sample JSON in
 `docs/sample-notes` contains a parent, children, a reference and examples
@@ -109,6 +108,8 @@ before you rely on the imported content. For another export, use another
 folder. There is no update in place or automatic merge with edited notes.
 
 ## Settings
+
+After a minor or major update, this plugin opens one What's new tab in the background. The tab and settings card suggest other NoteMods plugins and Zovo Chat and link to notemods.com for feedback ([privacy](https://notemods.com/privacy/)). The tab sends no data. Turn the tab off in Settings.
 
 Default import folder sets the starting destination in a new import
 window. It does not move existing notes. Layout presets and the snapshot

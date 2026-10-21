@@ -3,6 +3,7 @@ import { sponsorsSettingItems } from './license/github-obsidian';
 import { DEFAULT_LAYOUT, validateLayout, type Layout } from './importer';
 import { PRO_UI } from './pro';
 import type RemNoteJsonImportPlugin from './main';
+import { helloSettingItems } from './hello/settings';
 export interface Preset { name: string; layout: Layout }
 export interface ImportSettings { folder: string; presets: Preset[]; snapshot: Record<string, string> | null }
 export const DEFAULT_SETTINGS: ImportSettings = { folder: DEFAULT_LAYOUT.folder, presets: [], snapshot: null };
@@ -23,6 +24,11 @@ export function normalizeSettings(value: unknown): ImportSettings {
 export class ImportSettingTab extends PluginSettingTab {
  constructor(app: ConstructorParameters<typeof PluginSettingTab>[0], readonly importer: RemNoteJsonImportPlugin) { super(app, importer); }
  getSettingDefinitions(): SettingDefinitionItem[] {
+ 	// The product rows, then the "More from NoteMods" card (packages/hello).
+ 	return [...this.productSettingDefinitions(), ...helloSettingItems()];
+ }
+
+ productSettingDefinitions(): SettingDefinitionItem[] {
   return [
    { name: 'Default import folder', desc: 'Each import needs a new folder. Change the folder in the import window if it exists.', control: { type: 'text', key: 'folder', defaultValue: DEFAULT_LAYOUT.folder } },
    { name: 'Local import data', desc: 'Presets and the last complete import snapshot are stored in this vault’s plugin data. The snapshot contains source records.', render: setting => { setting.addButton(button => button.setButtonText('Clear snapshot').onClick(async () => { this.importer.settings.snapshot = null; await this.importer.saveSettings(); this.update(); })); } },
