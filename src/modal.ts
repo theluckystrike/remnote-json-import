@@ -1,6 +1,6 @@
 import { Modal, Notice, Setting, type App, type ButtonComponent } from 'obsidian';
 import { DEFAULT_LAYOUT, MAX_BYTES, planImport, type Layout, type Changes } from './importer';
-import { isPro } from './pro';
+import { isPro, proNotice, PRO_CHANGES, PRO_PRESETS, PRO_SUBTREES } from './pro';
 import type RemNoteJsonImportPlugin from './main';
 
 export class ImportModal extends Modal {
@@ -13,6 +13,7 @@ export class ImportModal extends Modal {
  private preview!: HTMLElement;
  private importButton!: ButtonComponent;
  private busy = false;
+ private rootsNotice: Notice | null = null;
  private ready = false;
  constructor(app: App, readonly importer: RemNoteJsonImportPlugin) { super(app); this.layout = { ...DEFAULT_LAYOUT, folder: importer.settings.folder, groupRoots: [] }; }
  onOpen(): void {
@@ -26,15 +27,15 @@ export class ImportModal extends Modal {
   this.source.addEventListener('input', () => { this.text = this.source.value; this.invalidate(); });
   new Setting(el).setName('Destination folder').setDesc('Use a new folder. Existing notes are not replaced.').addText(t => { this.folderInput = t.inputEl; t.setValue(this.layout.folder).onChange(v => { this.layout.folder = v; this.invalidate(); }); });
   new Setting(el).setName('Filename prefix').setDesc('Optional text before the title and stable source tag.').addText(t => { this.prefixInput = t.inputEl; t.setValue(this.layout.prefix).onChange(v => { this.layout.prefix = v; this.invalidate(); }); });
-  new Setting(el).setName('Pro subtree roots').setDesc('Enter source identifiers separated by commas. Each selected subtree becomes one document.').addText(t => { this.rootsInput = t.inputEl; t.setValue(this.layout.groupRoots.join(', ')).setDisabled(!isPro()).onChange(v => { this.layout.groupRoots = v.split(',').map(s => s.trim()).filter(Boolean); this.invalidate(); }); });
+  new Setting(el).setName('Pro subtree roots').setDesc('Enter source identifiers separated by commas. Each selected subtree becomes one document.').addText(t => { this.rootsInput = t.inputEl; t.setValue(this.layout.groupRoots.join(', ')).onChange(v => { if (!isPro()) { this.refuseRoots(); return; } this.layout.groupRoots = v.split(',').map(s => s.trim()).filter(Boolean); this.invalidate(); }); });
   const presets = new Setting(el).setName('Pro layout presets');
   let presetName = '';
   presets.addText(t => t.setPlaceholder('Preset name').onChange(v => { presetName = v; }));
-  presets.addButton(b => b.setButtonText('Save preset').onClick(() => this.run(async () => { await this.importer.savePreset(presetName, this.layout); new Notice('Layout preset saved.'); })));
-  for (const preset of this.importer.settings.presets) presets.addButton(b => b.setButtonText(preset.name).onClick(() => this.run(() => { this.setLayout(this.importer.applyPreset(preset.name)); })));
+  presets.addButton(b => b.setButtonText('Save preset').onClick(() => isPro() ? this.run(async () => { await this.importer.savePreset(presetName, this.layout); new Notice('Layout preset saved.'); }) : proNotice(PRO_PRESETS)));
+  for (const preset of this.importer.settings.presets) presets.addButton(b => b.setButtonText(preset.name).onClick(() => isPro() ? this.run(() => { this.setLayout(this.importer.applyPreset(preset.name)); }) : proNotice(PRO_PRESETS)));
   const controls = new Setting(el).setName('Review and import');
   controls.addButton(b => b.setButtonText('Preview').onClick(() => this.run(() => this.showPreview())));
-  controls.addButton(b => b.setButtonText('Pro change preview').onClick(() => this.run(() => this.showChanges())));
+  controls.addButton(b => b.setButtonText('Pro change preview').onClick(() => isPro() ? this.run(() => this.showChanges()) : proNotice(PRO_CHANGES)));
   controls.addButton(b => { this.importButton = b; b.setButtonText('Create notes').setCta().setDisabled(true).onClick(() => this.run(async () => {
    if (!this.ready) return;
    this.busy = true; this.importButton.setDisabled(true);
@@ -53,7 +54,9 @@ export class ImportModal extends Modal {
  }
  setLayout(layout: Layout): void { this.layout = { ...layout, groupRoots: [...layout.groupRoots] }; this.folderInput.value = layout.folder; this.prefixInput.value = layout.prefix; this.rootsInput.value = layout.groupRoots.join(', '); this.invalidate(); }
  invalidate(): void { this.ready = false; this.importButton?.setDisabled(true); this.preview?.empty(); }
- proChanged(): void { this.rootsInput?.toggleAttribute('disabled', !isPro()); if (!isPro() && this.layout.groupRoots.length) { this.layout.groupRoots = []; if (this.rootsInput) this.rootsInput.value = ''; } this.invalidate(); }
+ /** A free user typed in the subtree roots field: the field goes back to empty, and one notice shows while it is open. */
+ private refuseRoots(): void { if (this.rootsInput) this.rootsInput.value = ''; if (!this.rootsNotice?.messageEl.isConnected) this.rootsNotice = proNotice(PRO_SUBTREES); }
+ proChanged(): void { if (!isPro() && this.layout.groupRoots.length) { this.layout.groupRoots = []; if (this.rootsInput) this.rootsInput.value = ''; } this.invalidate(); }
  showPreview(): void {
   if (this.busy) return;
   this.invalidate(); if (this.layout.groupRoots.length) this.importer.requirePro();

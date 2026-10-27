@@ -2,7 +2,7 @@ import { Notice, Plugin } from 'obsidian';
 import { createGitHubSponsors } from './license/github-obsidian';
 import type { SponsorsManager } from './license/index';
 import { compareSnapshots, planImport, validateLayout, type Layout, type Changes } from './importer';
-import { SPONSORS, bindPro, isPro, resetPro } from './pro';
+import { SPONSORS, bindPro, isPro, proText, resetPro } from './pro';
 import { ImportModal } from './modal';
 import { DEFAULT_SETTINGS, ImportSettingTab, normalizeSettings, type ImportSettings } from './settings';
 import { writeImport, type WriteResult } from './writer';
@@ -32,7 +32,7 @@ export default class RemNoteJsonImportPlugin extends Plugin {
  openImport(): void { const modal = new ImportModal(this.app, this); this.modals.add(modal); modal.open(); }
  async loadSettings(): Promise<void> { this.settings = normalizeSettings(await this.loadData() as unknown); }
  async saveSettings(): Promise<void> { await this.saveData(this.settings); }
- requirePro(): void { if (!isPro()) throw new Error('This is a Pro feature. Sponsor on GitHub, then sign in from the plugin settings.'); }
+ requirePro(): void { if (!isPro()) throw new Error(proText('This is a Pro feature.')); }
  async savePreset(name: string, layout: Layout): Promise<void> {
   this.requirePro(); const options = validateLayout(layout); const label = name.trim();
   if (!label || label.length > 40) throw new Error('Use a preset name of 1 to 40 characters.');

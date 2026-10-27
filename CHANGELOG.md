@@ -1,5 +1,11 @@
 # remnote-json-import
 
+## 1.1.1
+
+### Patch Changes
+
+- bccd10d: Save preset, Pro change preview and the Pro subtree roots field now show how to get Pro, with a Sponsor on GitHub button. Nothing runs or saves until Pro is on.
+
 ## 1.1.0
 
 ### Minor Changes

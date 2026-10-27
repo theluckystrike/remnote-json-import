@@ -1,7 +1,6 @@
 {
 	"name": "remnote-json-import",
-	"repository": {"type": "git", "url": "theluckystrike/remnote-json-import.git"},
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"private": true,
 	"description": "Import RemNote JSON notes with parent links and references.",
 	"main": "main.js",

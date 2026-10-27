@@ -97,7 +97,7 @@ describe('Pro actions', () => {
  });
  it('requires a complete import before comparing', () => { enable(); expect(() => plugin().previewChanges(text)).toThrow('Import an export first'); });
  it('stops Pro actions when the manager state is revoked', async () => {
-  let active = true; bindPro({ isPro: () => active, onChange: () => () => undefined } as never);
+  let active = true; bindPro({ isPro: () => active, onChange: () => () => undefined, getState: () => ({ status: 'signed-out', lastAttemptAt: 0 }), hasToken: () => false, config: { sponsorLogin: 'theluckystrike' } } as never);
   const p = plugin(); await p.savePreset('P', DEFAULT_LAYOUT); active = false;
   expect(() => p.applyPreset('P')).toThrow('Pro feature'); await expect(p.importText(text, { ...DEFAULT_LAYOUT, groupRoots: ['a'] })).rejects.toThrow('Pro feature');
  });
