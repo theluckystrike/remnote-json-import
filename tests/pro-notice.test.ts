@@ -8,7 +8,7 @@ import manifest from '../manifest.json';
 
 // A free user can select the Pro controls of the import window. Each one shows the shared Pro notice with the
 // "Sponsor on GitHub" button. No preset is saved, no comparison runs and the subtree roots field stays empty.
-const PITCH = 'Sponsor on GitHub, then sign in from the plugin settings.';
+const PITCH = 'One payment turns on Pro in every NoteMods plugin. Sponsor on GitHub, then sign in from the plugin settings.';
 const SOURCE = JSON.stringify({ docs: [{ _id: 'root', key: ['Study plan'], children: ['child'] }, { _id: 'child', parent: 'root', key: ['Practice'] }] });
 
 function fakePro(pro: boolean): SponsorsManager {
