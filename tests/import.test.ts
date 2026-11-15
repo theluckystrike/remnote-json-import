@@ -6,6 +6,7 @@ import { bindPro, isPro, onProChange, resetPro, SPONSORS } from '../src/pro';
 import { normalizeSettings } from '../src/settings';
 import { writeImport } from '../src/writer';
 import manifest from '../manifest.json';
+import { budget } from './time-scale';
 const text = JSON.stringify({ docs: [{ _id: 'a', key: ['Plan'] }, { _id: 'b', parent: 'a', key: ['Step'], value: [{ i: 'q', _id: 'a' }] }] });
 const enable = () => bindPro({ isPro: () => true, onChange: () => () => undefined } as never);
 const plugin = () => new ImportPlugin(App.createConfigured__({ files: { 'Welcome.md': '# Start' } }) as never, manifest as never);
@@ -114,7 +115,7 @@ describe('parser bounds and stable output', () => {
  it('handles a 5000-node chain without recursive tree traversal', () => {
   const docs = Array.from({ length: 5000 }, (_, i) => ({ _id: String(i), key: [`Node ${i}`], ...(i ? { parent: String(i - 1) } : {}) }));
   const plan = planImport(JSON.stringify({ docs }), { ...DEFAULT_LAYOUT, groupRoots: ['0'] }); expect(plan.notes).toHaveLength(1); expect(plan.notes[0]!.ids).toHaveLength(5000);
- }, 30000);
+ }, budget(30000));
  it('keeps filenames within filesystem byte limits', () => { const name = safeName('😀'.repeat(100)); expect(new TextEncoder().encode(name).byteLength).toBeLessThanOrEqual(160); expect(name).not.toContain('\ufffd'); });
  it('keeps source tags and links stable when records are reordered', () => {
   const first = planImport(text); const docs = JSON.parse(text).docs; const second = planImport(JSON.stringify({ docs: docs.reverse() }));
@@ -151,7 +152,7 @@ describe('format safety', () => {
  });
  it('makes 25000 sibling nodes with parent links', () => {
   const docs = Array.from({ length: 25000 }, (_, i) => ({ _id: String(i), key: [`Node ${i}`], ...(i ? { parent: '0' } : {}) })); const plan = planImport(JSON.stringify({ docs })); expect(plan.notes).toHaveLength(25000); expect(plan.warnings).toHaveLength(0);
- }, 30000);
+ }, budget(30000));
  it('keeps a successful import visible if saving the snapshot fails', async () => {
   const p = plugin(); vi.spyOn(p, 'saveSettings').mockRejectedValue(new Error('settings denied')); expect((await p.importText(text, DEFAULT_LAYOUT)).complete).toBe(true); expect(p.app.vault.getAbstractFileByPath('RemNote import/Import report.md')).toBeTruthy();
  });
